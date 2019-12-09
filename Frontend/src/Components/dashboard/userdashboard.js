@@ -8,6 +8,10 @@ import axios from 'axios';
 import {rooturl} from '../../config';
 import Pagination from '../Pagination';
 
+import { graphql, compose } from 'react-apollo';
+import { getRestaurantsQuery } from '../../Queries/queries';
+//import { updateOwnerMutation } from '../../Mutations/mutations';
+
 class UserDashboard extends Component{
     constructor(props){
         super(props);
@@ -25,8 +29,7 @@ class UserDashboard extends Component{
         this.changeHandler = this.changeHandler.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
         this.restaurantpage = this.restaurantpage.bind(this);
-        this.applyFilter = this.applyFilter.bind(this);
-        this.paginate = this.paginate.bind(this);
+        this.allrestaurants = this.allrestaurants.bind(this);
     }
 
     changeHandler = (e) => {
@@ -71,31 +74,17 @@ class UserDashboard extends Component{
         })
     }
 
-    applyFilter = (e) => {
+    allrestaurants = (e) => {
         e.preventDefault();
-        var filter = this.state.option;
-        if(filter == "All" || filter == ""){
-            this.setState({
-                searchResults : this.state.cuisinesFilter
-            })
-            console.log(this.state.searchResults);
-        } else {
-            var allResults = this.state.cuisinesFilter;
-            var filteredResults = allResults.filter(rest => {
-                return rest.cuisine == filter;
-            })
-            this.setState({
-                searchResults : filteredResults
-            })
-            console.log(this.state.searchResults);
-        }
 
-
+        var data = this.props.getRestaurantsQuery.restaurants;
+        //console.log(data);
+        this.setState({
+            data : data
+        })
     }
 
-    defaultSrc = (e) => {
-        e.target.src = rooturl + '/uploads/download.png';
-    }
+    
 
     paginate = pageNumber => {
         this.setState({
@@ -107,46 +96,19 @@ class UserDashboard extends Component{
 
 
     
-    render(){
-
-        const indexOfLastPost = this.state.currentPage * this.state.postsPerPage;
-        const indexOfFirstPost = indexOfLastPost - this.state.postsPerPage;
-        const currentPosts = this.state.searchResults.slice(indexOfFirstPost, indexOfLastPost);
-        console.log(this.state.searchResults.length);
-
-        var searchDetails = currentPosts.map(result => {
-                return(
+    render(){ 
+        
+        if(this.state.data){
+            var rest = this.state.data.map(result => {
+                return (
                     <tr>
-                    <td><img src={rooturl + '/uploads/' + result.restimg} style={{ height: 50, width: 50 }} onError={this.defaultSrc}/></td>
                         <td>{result.restname}</td>
                         <td>{result.cuisine}</td>
                         <td><button value={result.restname} onClick={this.restaurantpage} class="btn btn-danger">View Restaurant</button></td>
                     </tr>
-                );
-        });
-
-        
-
-        var cuisinesList = []
-        
-        var result;
-        for(result of this.state.cuisinesFilter){
-            if(cuisinesList.indexOf(result.cuisine) == -1){
-                console.log(result.cuisine);
-                cuisinesList.push(result.cuisine);
-            }
+                )
+            })
         }
-        if(cuisinesList.length > 0){
-            console.log(cuisinesList);
-            var filterResults = cuisinesList.map((result)=> {
-                return(
-                    <option value={result}>{result}</option>
-                );
-            });
-        }
-        
-        
-
         let redirectVar = null;
         if(this.state.restname != ""){
             localStorage.setItem('restname', this.state.restname);
@@ -169,23 +131,7 @@ class UserDashboard extends Component{
             </div>
             <div class="page-content p-5" id="content">
             <div class="input-group mb-3">
-                <input type="text" onChange = {this.changeHandler} class="form-control" name="itemname" placeholder="Search"/>
-                <div class="input-group-append">
-                <button class="btn btn-danger" type="submit" onClick = {this.onSubmit}>Search</button>  
-                </div>
-                
-                <form>
-
-                
-                <div className="g-input-control btn-danger">
-                    <select className="btn-danger" onChange = {(e) => this.setState({option : e.target.value})} value = {this.state.option} >
-                    <option value="All" selected="selected">All</option>
-                        {filterResults}
-                    </select>
-                    <button class="btn btn-danger" type="submit" onClick = {this.applyFilter}>Apply Filter</button>
-                </div>
-                </form>
-
+            <button type="submit" class="btn btn-danger" onClick={this.allrestaurants}>All Restaurants</button>
             </div>
                 <table class="table table-hover">
                     <thead>
@@ -196,14 +142,9 @@ class UserDashboard extends Component{
                         </tr>
                     </thead>
                         <tbody>
-                            {searchDetails}
+                        {rest}
                         </tbody>
                 </table>
-                <Pagination 
-                    postsPerPage={this.state.postsPerPage}
-                    totalPosts={this.state.searchResults.length}
-                    paginate={this.paginate}
-                />
             </div>
             
             </div>
@@ -211,4 +152,6 @@ class UserDashboard extends Component{
     }
 }
 
-export default UserDashboard;
+export default compose(
+    graphql(getRestaurantsQuery, { name : "getRestaurantsQuery"})
+)(UserDashboard);
