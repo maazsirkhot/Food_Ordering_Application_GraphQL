@@ -2,7 +2,6 @@ const graphql = require('graphql');
 const Users = require('../models/users');
 const Owners = require('../models/owners');
 const Items = require('../models/items');
-const encrypt = require('../helpers/passwordEncryption');
 
 const {
     GraphQLObjectType,
