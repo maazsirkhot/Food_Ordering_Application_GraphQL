@@ -5,21 +5,7 @@ import NavBarLogin from "../navbarlogin";
 import './userprofile.css';
 import axios from 'axios';
 import {rooturl} from '../../config';
-import { profileupdate } from '../../Redux/Actions/profileAction';
-import { connect } from 'react-redux';
 
-
-function mapStateToProps(state){
-    return {
-        profileData: state.profileData
-    }
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        profileupdate : (profiledata) => dispatch(profileupdate(profiledata))
-    };
-}
 
 class UserProfile extends Component{
     constructor(props){
@@ -63,11 +49,7 @@ class UserProfile extends Component{
                 console.log("Response Status: " + response.status);
                 if(response.status === 200){
                     //console.log(response.data)
-                    var profileData = {
-                        profileupdate : false,
-                        getprofile : true
-                    }
-                    this.props.profileupdate(profileData);
+                    
                     this.setState({
                         name : response.data.responseMessage.name,
                         address : response.data.responseMessage.address,
@@ -78,11 +60,7 @@ class UserProfile extends Component{
 
                 } else {
                     console.log("Error Response");
-                    var profileData = {
-                        profileupdate : false,
-                        getprofile : false
-                    }
-                    this.props.profileupdate(profileData);
+                    
                 }
             })
         }
@@ -117,22 +95,14 @@ class UserProfile extends Component{
                 console.log("Response Status: " + response.status);
                 if(response.status === 200){
                     console.log(response.data)
-                    var profileData = {
-                        profileupdate : true,
-                        getprofile : true
-                    }
-                    this.props.profileupdate(profileData);
+                    
                     this.setState({
                         updateStatus : true
                     })
                     alert("Profile Updated Successfully");
 
                 } else {
-                    var profileData = {
-                        profileupdate : false,
-                        getprofile : true
-                    }
-                    this.props.profileupdate(profileData);
+                    
                     console.log("Error Response");
                 }
             })
@@ -206,4 +176,4 @@ class UserProfile extends Component{
 
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(UserProfile);
+export default UserProfile;

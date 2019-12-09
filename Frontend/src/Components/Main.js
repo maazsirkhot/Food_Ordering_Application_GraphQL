@@ -12,8 +12,6 @@ import OwnerDashboard from './dashboard/ownerdashboard'
 import ViewRestaurant from './dashboard/viewrestaurant';
 import MenuUpdate from './ownermenu/menuupdate';
 import ViewMenu from './ownermenu/viewmenu';
-import UserOrders from './orders/userorders';
-import OwnerOrders from './orders/ownerorders';
 import cookie from 'react-cookies';
 
 class Main extends Component {
@@ -30,12 +28,9 @@ class Main extends Component {
                 <Route path="/UserProfile" component={UserProfile}/>
                 <Route path="/OwnerProfile" component={OwnerProfile}/>
                 <Route path="/UserDashboard" component={UserDashboard}/>
-                <Route path="/OwnerDashboard" component={OwnerDashboard}/>
                 <Route path="/ViewRestaurant" component={ViewRestaurant}/>
                 <Route path="/ViewMenu" component={ViewMenu}/>
                 <Route path="/MenuUpdate" component={MenuUpdate}/>
-                <Route path="/UserOrders" component={UserOrders}/>
-                <Route path="/OwnerOrders" component={OwnerOrders}/>
                 
             </div>
         )

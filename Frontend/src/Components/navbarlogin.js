@@ -6,17 +6,6 @@ import {Redirect} from 'react-router';
 import { signout } from '../Redux/Actions/loginAction';
 import { connect } from 'react-redux';
 
-function mapStateToProps(state){
-    return {
-        userLoginData: state.userLoginData
-    }
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        signout : () => dispatch(signout())
-    };
-}
 
 class NavBarLogin extends Component{
     constructor(props){
@@ -41,7 +30,6 @@ class NavBarLogin extends Component{
         cookie.remove('cookiename', { path: '/' });
         cookie.remove('cookierestname', { path: '/' });
         localStorage.clear();
-        this.props.signout();
 
     }
 
@@ -54,7 +42,7 @@ class NavBarLogin extends Component{
             redirectVar = <Redirect to="/" />;
         } else {
             if(localStorage.getItem("cookie") == "ownercookie")
-                dashboard = "/OwnerDashboard"
+                dashboard = "/ViewMenu"
             else{
                 dashboard = "/UserDashboard"
             }

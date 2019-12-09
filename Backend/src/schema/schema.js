@@ -9,7 +9,8 @@ const {
     GraphQLSchema,
     GraphQLString,
     GraphQLID,
-    GraphQLFloat
+    GraphQLFloat,
+    GraphQLList
 } = graphql;
 
 
@@ -68,8 +69,14 @@ const RootQuery = new GraphQLObjectType({
                 return Owners.findOne({ email : args.email })
             }
         },
+        restaurants : {
+            type : new GraphQLList(OwnerType),
+            resolve(parent, args){
+                return Owners.find()
+            }
+        },
         item : {
-            type : ItemType,
+            type : new GraphQLList(ItemType),
             args : { restname : { type : GraphQLString }},
             resolve(parent, args){
                 return Items.find({ restname : args.restname })
@@ -171,7 +178,7 @@ const Mutation = new GraphQLObjectType({
             resolve(parent, args){
                 let data = {
                     name : args.name,
-                    email : args.username,
+                    email : args.email,
                     mob : args.mob,
                     restname : args.restname,
                     restzip : args.restzip,

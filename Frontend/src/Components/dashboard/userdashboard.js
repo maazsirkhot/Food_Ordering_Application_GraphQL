@@ -165,10 +165,6 @@ class UserDashboard extends Component{
                     <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>Profile
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/UserOrders" class="nav-link text-dark font-italic bg-light">
-                    <i class="fa fa-th-large mr-3 text-primary fa-fw"></i>Orders
-                    </a></li> 
             </ul>
             </div>
             <div class="page-content p-5" id="content">

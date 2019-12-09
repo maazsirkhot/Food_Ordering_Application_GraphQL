@@ -2,24 +2,9 @@ import React, {Component} from 'react';
 import cookie from 'react-cookies';
 import {Redirect} from 'react-router';
 import NavBar from "../navbar";
-import './ownerlogin.css';
-import { connect } from 'react-redux'; 
+import './ownerlogin.css'; 
 import axios from 'axios';
 import {rooturl} from '../../config';
-import { signup, signin } from '../../Redux/Actions/loginAction';
-
-function mapStateToProps(state){
-    return {
-        userLoginData: state.userLoginData
-    }
-}
-
-function mapDispatchToProps(dispatch) {
-    return {
-        signup: (signupdata) => dispatch(signup(signupdata)),
-        signin: (signindata) => dispatch(signin(signindata))
-    };
-}
 
 class OwnerLogin extends Component{
     constructor(props){
@@ -65,11 +50,6 @@ class OwnerLogin extends Component{
                     console.log(response.data.responseMessage);
                     console.log(response.data.token);
 
-                    var signindata = {
-                        signinstatus : true,
-                        signinmessage : response.data.responseMessage.name + " signed in"
-                    }
-                    this.props.signin(signindata);
                     this.setState({
                         logincheck : true
                     })
@@ -86,11 +66,7 @@ class OwnerLogin extends Component{
             })
             .catch(err => {
                 console.log(err);
-                var signindata = {
-                    signinstatus : false,
-                    signinmessage : "Sign In Failed"
-                }
-                this.props.signin(signindata);
+
                 this.setState({
                     logincheck : false
                 })
@@ -104,7 +80,7 @@ class OwnerLogin extends Component{
         let redirectVar = null;
         if (this.state.logincheck == true) {
             console.log("Checking Login")
-            redirectVar = <Redirect to="/OwnerDashboard" />;
+            redirectVar = <Redirect to="/ViewMenu" />;
         } else {
             console.log("Check did not succeed")
         }
@@ -146,4 +122,4 @@ class OwnerLogin extends Component{
 
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(OwnerLogin);
+export default OwnerLogin;
