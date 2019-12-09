@@ -6,6 +6,9 @@ import './userprofile.css';
 import axios from 'axios';
 import {rooturl} from '../../config';
 
+import { graphql, compose } from 'react-apollo';
+import { getUserQuery } from '../../Queries/queries';
+import { updateUserMutation } from '../../Mutations/mutations';
 
 class UserProfile extends Component{
     constructor(props){
@@ -20,6 +23,7 @@ class UserProfile extends Component{
         this.changeHandler = this.changeHandler.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
+        this.onProfile = this.onProfile.bind(this);
     }
 
     changeHandler = (e) => {
@@ -39,30 +43,7 @@ class UserProfile extends Component{
             var username = localStorage.getItem("cookieemail");
             this.setState({
                 username : username
-            })
-            const data = {
-                username : username
-            }
-            axios.defaults.headers.common["Authorization"] = localStorage.getItem("token") ? localStorage.getItem("token") : "";
-            axios.post(rooturl + '/GetUserProfile', data)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    //console.log(response.data)
-                    
-                    this.setState({
-                        name : response.data.responseMessage.name,
-                        address : response.data.responseMessage.address,
-                        contact : response.data.responseMessage.contact,
-                        imglink : rooturl + '/uploads/' + response.data.responseMessage.imglink
-                    })
-                    //console.log(this.state);
-
-                } else {
-                    console.log("Error Response");
-                    
-                }
-            })
+            })            
         }
     }
     onSubmit(e){
@@ -74,38 +55,68 @@ class UserProfile extends Component{
                 contact : this.state.contact,
                 address : this.state.address,
                 username : this.state.username,
-                imglink : this.state.imglink
             }
-            //console.log(data);
-            const config = {
-                headers: {
-                    'content-type': 'multipart/form-data'
-                }
-            };
-            let profileData = new FormData();
-            profileData.append("name", data.name);
-            profileData.append("contact", data.contact);
-            profileData.append("address", data.address);
-            profileData.append("username", data.username);
-            profileData.append("imglink", this.state.imglink);
-            console.log(profileData);
-            axios.defaults.headers.common["Authorization"] = localStorage.getItem("token") ? localStorage.getItem("token") : "";
-            axios.post(rooturl + '/UserProfile', profileData)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    console.log(response.data)
-                    
-                    this.setState({
-                        updateStatus : true
-                    })
-                    alert("Profile Updated Successfully");
-
-                } else {
-                    
-                    console.log("Error Response");
+            var check = this.props.updateUserMutation({
+                variables : {
+                    username : this.state.username,
+                    name : this.state.name,
+                    address : this.state.address,
+                    contact : this.state.contact
                 }
             })
+
+            if(check){
+                console.log(check);
+                this.setState({
+                    updateStatus : true
+                })
+            } else {
+                this.setState({
+                    updateStatus : false
+                })
+            }
+
+    }
+
+    onProfile(e){
+        e.preventDefault();
+        console.log("Updating Profile");
+
+        var data = this.props.getUserQuery.user;
+        console.log(data);
+
+        this.setState({
+            data : data
+        })
+
+        var username = localStorage.getItem("cookieemail");
+        this.setState({
+            username : username
+        })
+        console.log("Checking Email : " + username);
+        const form = {
+            username : username
+        }
+
+        var user;
+        for(user of data){
+            //console.log(user);
+            if(user.username == form.username){
+                console.log(user)
+                this.setState({
+                    name : user.name,
+                    contact : user.contact,
+                    address : user.address,
+                    username : user.username
+                })
+                console.log(this.state);
+                return;
+            } else {
+                this.setState({
+                    getProfile : false
+                })
+            }
+        }
 
     }
 
@@ -122,9 +133,8 @@ class UserProfile extends Component{
                 
                 <div>
                 <div class="container">
-                <img src={this.state.imglink} style={{ height: 250, width: 200 }} alt="Profile Picture"/>
                 <h2 >User Profile</h2>
-                
+                <button type="submit" class="btn btn-danger" onClick={this.onProfile}>Get Profile</button>
                 <form class="form-horizontal">
                     <div class="form-group">
                     <label class="control-label col-sm-2" for="name">Username:</label>
@@ -151,15 +161,6 @@ class UserProfile extends Component{
                     </div>
                     </div>
                     
-                    
-                    <div class="form-group">
-                        <label>Profile Picture</label>
-                        <div class="input-group">
-                            <span class="input-group-btn">
-                                <span class="btn btn-default btn-file">Upload Image <input type="file" id="imgInp" name="imglink" onChange = {this.onChange}/></span> 
-                            </span>
-                        </div>
-                    </div>
                     <div class="form-group">        
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="submit" class="btn btn-danger" onClick={this.onSubmit}>Submit</button>
@@ -176,4 +177,7 @@ class UserProfile extends Component{
 
 }
 
-export default UserProfile;
+export default compose(
+    graphql(getUserQuery, { name : "getUserQuery"}),
+    graphql(updateUserMutation, { name : "updateUserMutation"})    
+)(UserProfile);

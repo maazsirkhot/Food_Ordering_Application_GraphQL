@@ -3,9 +3,10 @@ import cookie from 'react-cookies';
 import {Link, Redirect} from 'react-router-dom';
 import NavBarLogin from "../navbarlogin";
 import "./ownerprofile.css";
-import axios from 'axios';
-import {rooturl} from '../../config';
 
+import { graphql, compose } from 'react-apollo';
+import { getOwnerQuery } from '../../Queries/queries';
+import { updateOwnerMutation } from '../../Mutations/mutations';
 
 class OwnerProfile extends Component{
     constructor(props){
@@ -17,11 +18,14 @@ class OwnerProfile extends Component{
             restname : "",
             restzip : "",
             cuisine : "",
-            updateStatus : ""
+            updateStatus : "",
+            getProfile: "",
+            //data : this.props.getOwnerQuery
         }
         this.changeHandler = this.changeHandler.bind(this);
         this.onChange = this.onChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
+        this.onProfile = this.onProfile.bind(this);
     }
     changeHandler = (e) => {
         this.setState({
@@ -36,76 +40,86 @@ class OwnerProfile extends Component{
     }
 
     componentWillMount(){
+        
         if(localStorage.getItem("cookieemail")){
             var username = localStorage.getItem("cookieemail");
             this.setState({
                 email : username
             })
-            console.log("Checking Email : " + this.state.email);
-            const data = {
-                email : username
-            }
-            axios.defaults.headers.common["Authorization"] = localStorage.getItem("token") ? localStorage.getItem("token") : "";
-            axios.post(rooturl + '/GetOwnerProfile', data)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    //console.log(response.data)
-
-                    this.setState({
-                        name : response.data.responseMessage.name,
-                        mob : response.data.responseMessage.mob,
-                        restname : response.data.responseMessage.restname,
-                        restzip : response.data.responseMessage.restzip,
-                        cuisine : response.data.responseMessage.cuisine,
-                        imglink : rooturl + '/uploads/' + response.data.responseMessage.restimg
-                    })
-                    console.log(this.state);
-
-                } else {
-                    console.log("Error Response");
-                }
-            })
+            console.log("Checking Email : " + username);
         }
     }
 
     onSubmit(e){
         e.preventDefault();
             console.log("Updating Profile");
+            var data = this.props.getOwnerQuery;
+            console.log(data);
 
-            const data = {
-                name : this.state.name,
-                mob : this.state.mob,
-                restzip : this.state.restzip,
-                cuisine : this.state.cuisine,
-                email : this.state.email,
-                imglink : this.state.imglink
-            }
-
-            let profileData = new FormData();
-            profileData.append("name", data.name);
-            profileData.append("mob", data.mob);
-            profileData.append("restzip", data.restzip);
-            profileData.append("cuisine", data.cuisine);
-            profileData.append("email", data.email);
-            profileData.append("imglink", this.state.imglink);
-
-            axios.post(rooturl + '/OwnerProfile', profileData)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    console.log(response.data.responseMessage)
-                    
-                    this.setState({
-                        updateStatus : true
-                    })
-                    alert("Profile Updated Successfully");
-
-                } else {
-                    
-                    console.log("Error Response");
+            var check = this.props.updateOwnerMutation({
+                variables : {
+                    email : this.state.email,
+                    name : this.state.name,
+                    restname : this.state.restname,
+                    restzip : this.state.restzip,
+                    cuisine : this.state.cuisine,
+                    mob : this.state.mob
                 }
             })
+            if(check){
+                console.log(check);
+                this.setState({
+                    updateStatus : true
+                })
+            } else {
+                this.setState({
+                    updateStatus : false
+                })
+            }
+
+    }
+    
+    onProfile(e){
+        e.preventDefault();
+        console.log("Updating Profile");
+
+        var data = this.props.getOwnerQuery.owner;
+        console.log(data);
+
+        this.setState({
+            data : data
+        })
+
+        var username = localStorage.getItem("cookieemail");
+        this.setState({
+            email : username
+        })
+        console.log("Checking Email : " + username);
+        const form = {
+            username : username
+        }
+
+        var user;
+        for(user of data){
+            //console.log(user);
+            if(user.email == form.username){
+                console.log(user)
+                this.setState({
+                    name : user.name,
+                    mob : user.mob,
+                    restname : user.restname,
+                    restzip : user.restzip,
+                    cuisine : user.cuisine,
+                    getProfile : true
+                })
+                console.log(this.state);
+                return;
+            } else {
+                this.setState({
+                    getProfile : false
+                })
+            }
+        }
 
     }
 
@@ -118,8 +132,8 @@ class OwnerProfile extends Component{
                 <NavBarLogin />
                 <div>
                 <div class="container">
-                <img src={this.state.imglink} style={{ height: 250, width: 200 }} alt="Profile Picture"/>
                 <h2 >Owner Profile</h2>
+                <button type="submit" class="btn btn-danger" onClick={this.onProfile}>Get Profile</button>
                 <form class="form-horizontal">
                     <div class="form-group">
                     <label class="control-label col-sm-2" for="Email">Email:</label>
@@ -160,18 +174,11 @@ class OwnerProfile extends Component{
                     </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Restaurant Image</label>
-                        <div class="input-group">
-                            <span class="input-group-btn">
-                                <span class="btn btn-default btn-file">Upload Image<input type="file" id="imgInp" name="imglink" onChange = {this.onChange}/></span> 
-                            </span>
-                        </div>
-                    </div>
+                    
                     <div class="form-group">        
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="submit" class="btn btn-danger" onClick={this.onSubmit}>Submit</button>
-                        <Link to="/OwnerDashboard"><button type="submit" class="btn btn-danger">Cancel</button></Link>
+                        <Link to="/ViewMenu"><button type="submit" class="btn btn-danger">Cancel</button></Link>
                     </div>
                     </div>
                 </form>
@@ -183,4 +190,7 @@ class OwnerProfile extends Component{
 
 }
 
-export default OwnerProfile;
+export default compose(
+    graphql(getOwnerQuery, { name : "getOwnerQuery"}),
+    graphql(updateOwnerMutation, { name : "updateOwnerMutation"})    
+)(OwnerProfile);
