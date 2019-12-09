@@ -6,6 +6,8 @@ import './userlogin.css';
 import axios from 'axios';
 import {rooturl} from '../../config';
 
+import { graphql, compose } from 'react-apollo';
+import { getUserQuery } from '../../Queries/queries'
 
 
 class UserLogin extends Component{
@@ -27,50 +29,46 @@ class UserLogin extends Component{
         })
     }
 
-
-
     onSubmit(e){
         e.preventDefault();
         if (this.state.username == "" || this.state.password == "") {
             alert("Username and Password cannot be empty");
         }
         else {
-            const data = {
+            const form = {
                 username : this.state.username,
                 password : this.state.password
             }
-            axios.defaults.withCredentials = true;
 
-            axios.post(rooturl + '/loginUser', data)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    localStorage.setItem('token', response.data.token);
-                    localStorage.setItem('cookie', "usercookie");
-                    localStorage.setItem('cookieemail', response.data.responseMessage.username);
-                    localStorage.setItem('cookiename', response.data.responseMessage.name);
+            var data = this.props.getUserQuery.user;
 
-                    console.log(response.data.responseMessage);
-                    console.log(response.data.token);
-                    
-                    this.setState({
-                        logincheck : true
-                    })
+            console.log(data);
+            var user;
+            for(user of data){
+                console.log(user);
+                if(user.username == form.username){
+                    console.log(user.password, form.password)
+                    if(user.password == form.password){
+                        localStorage.setItem('cookie', "usercookie");
+                        localStorage.setItem('cookieemail', user.username);
+                        localStorage.setItem('cookiename', user.name);
+                        this.setState({
+                            logincheck : true
+                        })
+                        return;
+                    } else {
+                        this.setState({
+                            logincheck : false
+                        })
+                        alert("Login Failed. Invalid Password");
+                        return;
+                    }
                 } else {
-                    
                     this.setState({
-                        logincheck : false,
+                        logincheck : false
                     })
                 }
-            })
-            .catch(err => {
-                console.log(err);
-                
-                this.setState({
-                    logincheck : false
-                })
-                alert("Login failed. Try again!");
-            })
+            }
         }
     }
 
@@ -117,4 +115,6 @@ class UserLogin extends Component{
 
 }
 
-export default UserLogin;
+export default compose(
+    graphql(getUserQuery, { name: "getUserQuery" })
+)(UserLogin);

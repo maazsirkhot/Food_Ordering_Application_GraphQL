@@ -56,17 +56,15 @@ const RootQuery = new GraphQLObjectType({
     name : 'RootQueryType',
     fields : {
         user : {
-            type : UserType,
-            args : {username : { type : GraphQLString} },
+            type : new GraphQLList(UserType),
             resolve(parent, args){
-                return Users.findOne({username : args.username})
+                return Users.find()
             }
         },
         owner : {
-            type : OwnerType,
-            args : { email : { type : GraphQLString } },
+            type : new GraphQLList(OwnerType),
             resolve(parent, args){
-                return Owners.findOne({ email : args.email })
+                return Owners.find()
             }
         },
         restaurants : {
@@ -77,9 +75,8 @@ const RootQuery = new GraphQLObjectType({
         },
         item : {
             type : new GraphQLList(ItemType),
-            args : { restname : { type : GraphQLString }},
             resolve(parent, args){
-                return Items.find({ restname : args.restname })
+                return Items.find()
             }
         }
     }

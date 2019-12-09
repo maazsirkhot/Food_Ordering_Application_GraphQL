@@ -11,11 +11,7 @@ const db = require('./src/helpers/settings').mongoURI;
 const graphqlHTTP = require('express-graphql');
 const schema = require('./src/schema/schema');
 
-app.use('/graphql', graphqlHTTP({
-  schema,
-  graphiql : true
-}));
- 
+app.use(cors());
 
 mongoose
   .connect(db, { useNewUrlParser: true, useUnifiedTopology: true, poolSize: 100, useFindAndModify: false })
@@ -32,15 +28,20 @@ app.use(session({
 }));
 
 app.use(function(req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', rooturl);
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers');
     res.setHeader('Cache-Control', 'no-cache');
     next();
 });
+//{ origin: rooturl, credentials: true }
 
-app.use(cors({ origin: rooturl, credentials: true }));
+app.use('/graphql', graphqlHTTP({
+  schema,
+  graphiql : true
+}));
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));

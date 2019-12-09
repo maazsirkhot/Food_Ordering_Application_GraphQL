@@ -6,6 +6,8 @@ import './usersignup.css';
 import axios from 'axios';
 import {rooturl} from '../../config';
 
+import { graphql, compose } from 'react-apollo';
+import { addUserMutation } from '../../Mutations/mutations';
 
 class UserSignUp extends Component{
     constructor(props){
@@ -35,39 +37,17 @@ class UserSignUp extends Component{
         } else if(this.state.password != this.state.confirmpassword){
             alert("Passwords do not match");
         } else {
-            const data = {
-                username : this.state.username,
-                password : this.state.password,
-                name : this.state.fname + " " + this.state.lname
-            }
-            axios.defaults.withCredentials = true;
-
-            axios.post(rooturl + '/SignUpUser', data)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    console.log(response.status);
-                    
-                    this.setState({
-                        signupcheck : true
-                    })
-                } else {
-                    
-                    this.setState({
-                        signupcheck : false
-                    })
-                    alert("Signup Failed. Please try again!");
+            this.props.addUserMutation({
+                variables : {
+                    username : this.state.username,
+                    password : this.state.password,
+                    name : this.state.fname + " " + this.state.lname,
                 }
             })
-            .catch(err => {
-                console.log(err);
-                
-                alert("Signup Failed. Please try again!");
-                this.setState({
-                    signupcheck : false
-                })
-                
-            })
+            
+            this.setState({
+                signupcheck : true
+            }) 
         }
     }
 
@@ -122,4 +102,6 @@ class UserSignUp extends Component{
 
 }
 
-export default UserSignUp;
+export default compose(
+    graphql(addUserMutation, { name : "addUserMutation"})
+)(UserSignUp);

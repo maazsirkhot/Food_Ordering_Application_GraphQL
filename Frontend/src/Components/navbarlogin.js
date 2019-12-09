@@ -3,8 +3,6 @@ import cookie from 'react-cookies';
 import {Link} from 'react-router-dom';
 import bootstrap from 'bootstrap';
 import {Redirect} from 'react-router';
-import { signout } from '../Redux/Actions/loginAction';
-import { connect } from 'react-redux';
 
 
 class NavBarLogin extends Component{
@@ -36,17 +34,13 @@ class NavBarLogin extends Component{
     render() {
         let redirectVar = null;
         let dashboard = null;
-        if (!localStorage.getItem("token")) {
-            console.log("LocalStorage: " + localStorage.getItem("token"));
-            localStorage.clear();
-            redirectVar = <Redirect to="/" />;
-        } else {
-            if(localStorage.getItem("cookie") == "ownercookie")
-                dashboard = "/ViewMenu"
-            else{
-                dashboard = "/UserDashboard"
-            }
+        
+        if(localStorage.getItem("cookie") == "ownercookie")
+            dashboard = "/ViewMenu"
+        else{
+            dashboard = "/UserDashboard"
         }
+        
 
         
         return (    
@@ -81,4 +75,4 @@ class NavBarLogin extends Component{
 
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(NavBarLogin);
+export default NavBarLogin;

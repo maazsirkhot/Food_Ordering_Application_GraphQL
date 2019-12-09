@@ -6,6 +6,9 @@ import './ownerlogin.css';
 import axios from 'axios';
 import {rooturl} from '../../config';
 
+import { graphql, compose } from 'react-apollo';
+import { getOwnerQuery } from '../../Queries/queries'
+
 class OwnerLogin extends Component{
     constructor(props){
         super(props);
@@ -30,49 +33,41 @@ class OwnerLogin extends Component{
             alert("Username and Password cannot be empty");
         }
         else {
-            const data = {
+            const form = {
                 username : this.state.username,
                 password : this.state.password
             }
-            axios.defaults.withCredentials = true;
             
+            var data = this.props.getOwnerQuery.owner;
 
-            axios.post(rooturl + '/loginOwner', data)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    console.log("Response Status: " + response.data);
-                    localStorage.setItem('token', response.data.token);
-                    localStorage.setItem('cookie', "ownercookie");
-                    localStorage.setItem('cookieemail', response.data.responseMessage.email);
-                    localStorage.setItem('cookiename', response.data.responseMessage.name);
-                    localStorage.setItem('cookierestname', response.data.responseMessage.restname);
-                    console.log(response.data.responseMessage);
-                    console.log(response.data.token);
-
-                    this.setState({
-                        logincheck : true
-                    })
-                } else {
-                    var signindata = {
-                        signinstatus : false,
-                        signinmessage : "Sign In Failed"
+            console.log(data);
+            var user;
+            for(user of data){
+                console.log(user);
+                if(user.email == form.username){
+                    console.log(user.password, form.password)
+                    if(user.password == form.password){
+                        localStorage.setItem('cookie', "ownercookie");
+                        localStorage.setItem('cookieemail', user.email);
+                        localStorage.setItem('cookiename', user.name);
+                        localStorage.setItem('cookierestname', user.restname);
+                        this.setState({
+                            logincheck : true
+                        })
+                        return;
+                    } else {
+                        this.setState({
+                            logincheck : false
+                        })
+                        alert("Login Failed. Invalid Password");
+                        return;
                     }
-                    this.props.signin(signindata);
+                } else {
                     this.setState({
                         logincheck : false
                     })
                 }
-            })
-            .catch(err => {
-                console.log(err);
-
-                this.setState({
-                    logincheck : false
-                })
-                console.log(this.state.logincheck);
-                alert("Login Failed. Please try again!");
-            })
+            }
         }
     }
 
@@ -122,4 +117,6 @@ class OwnerLogin extends Component{
 
 }
 
-export default OwnerLogin;
+export default compose(
+    graphql(getOwnerQuery, { name: "getOwnerQuery" })
+)(OwnerLogin);

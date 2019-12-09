@@ -16,7 +16,6 @@ class App extends Component {
   render() {
     return (
       <ApolloProvider client={client}>
-      //Use Browser Router to route to different pages
       <BrowserRouter>
         <div>
           {/* App Component Has a Child Component called Main*/}

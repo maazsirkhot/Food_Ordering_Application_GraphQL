@@ -6,6 +6,9 @@ import './ownersignup.css';
 import axios from 'axios';
 import {rooturl} from '../../config';
 
+import { graphql, compose } from 'react-apollo';
+import { addOwnerMutation } from '../../Mutations/mutations';
+
 
 class OwnerSignUp extends Component{
     constructor(props){
@@ -16,7 +19,6 @@ class OwnerSignUp extends Component{
             email : "",
             password : "",
             confirmpassword : "",
-            mob : "",
             restname : "",
             restzip : "",
             cuisine : "",
@@ -37,42 +39,18 @@ class OwnerSignUp extends Component{
         if (this.state.email == "" || this.state.password == "" || this.state.password != this.state.confirmpassword || this.state.fname == "" || this.state.mob == "" || this.state.restname == "" || this.state.restzip == "" || this.state.cuisine =="") {
             alert("Provide all valid inputs");
         } else {
-            const data = {
-                email : this.state.email,
-                password : this.state.password,
-                name : this.state.fname + " " + this.state.lname,
-                mob : this.state.mob,
-                restname : this.state.restname,
-                restzip : this.state.restzip,
-                cuisine : this.state.cuisine
-            }
-            axios.defaults.withCredentials = true;
-
-            axios.post(rooturl + '/SignUpOwner', data)
-            .then(response => {
-                console.log("Response Status: " + response.status);
-                if(response.status === 200){
-                    console.log(response.status);
-                    this.setState({
-                        logincheck : true
-                    })
-                    this.setState({
-                        signupcheck : true
-                    })
-                } else {
-                    this.setState({
-                        signupcheck : false
-                    })
-                    alert("Signup Failed. Please try again!");
+            this.props.addOwnerMutation({
+                variables : {
+                    email : this.state.email,
+                    password : this.state.password,
+                    name : this.state.fname + " " + this.state.lname,
+                    restname : this.state.restname,
+                    restzip : this.state.restzip,
+                    cuisine : this.state.cuisine
                 }
             })
-            .catch(err => {
-                console.log(err);
-                alert("Signup Failed. Please try again!");
-                this.setState({
-                    signupcheck : false
-                })
-                
+            this.setState({
+                signupcheck : true
             })
         }
     }
@@ -115,10 +93,6 @@ class OwnerSignUp extends Component{
                     <label for="cuisine">Cuisine</label>
                     </div>
                     <div class="form-label-group">
-                    <input type="tel" name="mob" id="mob" onChange={this.changeHandler} class="form-control" placeholder="Contact" required/>
-                    <label for="mob">Contact</label>
-                    </div>
-                    <div class="form-label-group">
                     <input type="email" name="email" id="email" onChange={this.changeHandler} class="form-control" placeholder="Email address" required/>
                     <label for="email">Email address</label>
                     </div>
@@ -145,4 +119,6 @@ class OwnerSignUp extends Component{
 
 }
 
-export default OwnerSignUp;
+export default compose(
+    graphql(addOwnerMutation, { name : "addOwnerMutation"})
+)(OwnerSignUp);
